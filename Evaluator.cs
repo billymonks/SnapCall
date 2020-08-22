@@ -8,8 +8,9 @@ using Combinatorics;
 namespace SnapCall
 {
 	using System.IO;
+    using System.Runtime.Serialization.Formatters.Binary;
 
-	public class Evaluator
+    public class Evaluator
 	{
 		private bool debug;
 		private HashMap handRankMap;
@@ -17,6 +18,7 @@ namespace SnapCall
 
 		public Evaluator(
 			string fileName =	null,
+			byte[] fileBytes = null,
 			bool fiveCard =		true,
 			bool sixCard =		true,
 			bool sevenCard =	true,
@@ -43,6 +45,10 @@ namespace SnapCall
 					LoadFromFile(fileName);
 				}
 			}
+			else if (fileBytes != null)
+            {
+				LoadFromTextAsset(fileBytes);
+            }
 			else
 			{
 				int minHashMapSize = (fiveCard ? 2598960 : 0) + (sixCard ? 20358520 : 0) + (sevenCard ? 133784560 : 0);
@@ -104,6 +110,19 @@ namespace SnapCall
 				inputStream.CopyTo(memoryStream);
 				handRankMap = HashMap.Deserialize(memoryStream.ToArray());
 			}
+		}
+
+		private void LoadFromTextAsset(byte[] bytes)
+		{
+			Stream s = new MemoryStream(bytes);
+			BinaryFormatter formatter = new BinaryFormatter();
+			
+			using (MemoryStream memoryStream = new MemoryStream())
+			{
+				s.CopyTo(memoryStream);
+				handRankMap = HashMap.Deserialize(memoryStream.ToArray());
+			}
+			s.Close();
 		}
 
 		private void GenerateFiveCardTable()
